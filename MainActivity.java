@@ -1,6 +1,7 @@
 package com.example.test;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,8 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.navigation.NavigationView;
 import com.example.test.databinding.ActivityMainBinding;
+
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -41,44 +44,21 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     RecyclerView recyclerView;
-    TextView welcomeTextView;
     EditText messageEditText;
     ImageButton sendButton;
     ArrayList<Message> messageArrayList;
     MessageAdapter messageAdapter;
     ImageView imageHome;
     public static final MediaType JSON = MediaType.get("application/json");
-
     OkHttpClient client = new OkHttpClient();
 
-
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         messageArrayList = new ArrayList<>();
 
-//        recyclerView = findViewById(R.id.recyler_view);
-//        messageEditText = findViewById(R.id.TextInput);
-//        sendButton = findViewById(R.id.send_button);
-
-        //setup recycler view
-//        messageAdapter = new MessageAdapter(messageArrayList);
-//        recyclerView.setAdapter(messageAdapter);
-//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-//        linearLayoutManager.setStackFromEnd(true);
-//        recyclerView.setLayoutManager(linearLayoutManager);
-//
-//        sendButton.setOnClickListener((view -> {
-//            String question = messageEditText.getText().toString().trim();
-//            addToChat(question, Message.SENT_BY_ME);
-//        }));
-
-
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         setSupportActionBar(binding.appBarMain.toolbar);
 
         DrawerLayout drawer = binding.drawerLayout;
@@ -96,8 +76,12 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = binding.appBarMain.getRoot().findViewById(R.id.recyler_view);
         messageEditText = binding.appBarMain.getRoot().findViewById(R.id.TextInput);
         sendButton = binding.appBarMain.getRoot().findViewById(R.id.send_button);
+        imageHome = binding.appBarMain.getRoot().findViewById(R.id.imageHome);
+
         messageAdapter = new MessageAdapter(messageArrayList);
+
         recyclerView.setAdapter(messageAdapter);
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -107,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
             addToChat(question, Message.SENT_BY_ME);
             messageEditText.setText("");
             callAPI(question);
-            //imageHome.setVisibility(view.GONE);
+            imageHome.setVisibility(view.GONE);
+
         }));
 
     }
@@ -133,13 +118,10 @@ public class MainActivity extends AppCompatActivity {
                 messageArrayList.add(new Message(message, sentBy));
                 messageAdapter.notifyDataSetChanged();
                 recyclerView.smoothScrollToPosition(messageAdapter.getItemCount());
+
             }
         });
-    }
 
-    void addResponse(String response){
-        messageArrayList.remove(messageArrayList.size()-1);
-        addToChat(response, Message.SENT_BY_BOT);
     }
 
     void callAPI(String question){
@@ -148,22 +130,24 @@ public class MainActivity extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject();
         try {
             JSONArray messagesArray = new JSONArray();
+
             JSONObject messageObject = new JSONObject();
             messageObject.put("role", "user");
             messageObject.put("content", question);
             messagesArray.put(messageObject);
 
-            jsonObject.put("prompt", question);
-            jsonObject.put("model", "gpt-3.5-turbo-instruct");
-            jsonObject.put("max_tokens", 7);
-            jsonObject.put("temperature", 0);
+            jsonObject.put("messages", messagesArray);
+            jsonObject.put("model", "gpt-3.5-turbo");
+            jsonObject.put("temperature", 0.7);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
         RequestBody body = RequestBody.create(jsonObject.toString(),JSON);
+        Log.i("request", body.toString());
         Request request = new Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
                 .header("Authorization", "Bearer rahasia")
+                .header("Content-Type", "application/json")
                 .post(body)
                 .build();
 
@@ -178,24 +162,31 @@ public class MainActivity extends AppCompatActivity {
                 if(response.isSuccessful()){
                     JSONObject jsonObject = null;
                     try {
+                        Log.i("Response:", response.body().toString());
                         jsonObject = new JSONObject(response.body().string());
                         JSONArray jsonArray = jsonObject.getJSONArray("choices");
-                        //String result = jsonArray.getJSONObject(0).getString("text");
                         String result = jsonArray.getJSONObject(0)
                                 .getJSONObject("message")
                                 .getString("content");
                         addResponse(result.trim());
                     } catch (JSONException e) {
                         addResponse("Error parsing response: " + e.getMessage());
+                        Log.e("Error Parsing", e.getMessage());
                     }
 
                 } else {
                     String errorBody = response.body() != null ? response.body().string() : "Empty response body";
+                    Log.e("Request error", errorBody.toString());
                     addResponse("Failed to load response due to " + response.body().toString());
                 }
             }
         });
 
+    }
+
+    void addResponse(String response){
+        messageArrayList.remove(messageArrayList.size()-1);
+        addToChat(response, Message.SENT_BY_BOT);
     }
 
 }
