@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:id="@+id/recyler_view"
+        android:scrollbars="vertical"
+        android:focusableInTouchMode="true"
+        android:layout_above="@+id/buttom_layout"
+        android:background="@color/colorPrimary"/>
+
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/buttom_layout"
+        android:background="@color/colorPrimary"
+
+
+        >
+
+        <EditText
+            android:id="@+id/TextInput"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:layout_marginRight="60dp"
+            android:inputType="text"
+            android:textColorHint="@color/white"
+            android:hint="Message"
+            android:layout_marginTop="10dp"
+            android:paddingLeft="15dp"
+            android:layout_marginLeft="10dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <ImageButton
+            android:id="@+id/send_button"
+            android:background="@color/colorPrimary"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="6dp"
+            android:padding="8dp"
+            android:src="@drawable/baseline_send_24"
+            android:contentDescription="@string/send_button_description">
+        </ImageButton>
+
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imageHome"
+        android:layout_width="163dp"
+        android:layout_height="308dp"
+
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="228dp"
+        app:srcCompat="@drawable/chatgpt_logo" />
+</RelativeLayout>
+
